@@ -23,7 +23,7 @@ CACHED_UID=$(stat -c "%u" $TESTFILE)
 CACHED_GID=$(stat -c "%g" $TESTFILE)
 
 if [ $CACHED_UID != $RUN_UID ] || [ $RUN_GID != $CACHED_GID ]; then
-    echo -e "\033[01;38;5;155mChanging user id:group to ${RUN_UID}:${RUN_GID}. Please wait...\033[0m"
+    echo -e "Changing user id:group to ${RUN_UID}:${RUN_GID}. Please wait..."
     chown $RUN_UID:$RUN_GID -R $CARGO_HOME $RUSTUP_HOME $TOOLCHAIN_HOME
 fi
 

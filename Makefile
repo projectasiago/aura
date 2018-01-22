@@ -48,7 +48,7 @@ build/boot.img: $(TARGET)
 	@$(MMD) -i fat.img ::/EFI/BOOT
 	@$(MCOPY) -i fat.img $(TARGET) ::/EFI/BOOT
 	@mv fat.img $(BUILD_ROOT)/$(HD_IMG)
-	
+
 img-docker: clean # clean is necessary, see https://github.com/japaric/xargo/issues/189
 	docker build -t projectasiago/aura.build .
 	docker run -it --rm \
@@ -59,5 +59,4 @@ img-docker: clean # clean is necessary, see https://github.com/japaric/xargo/iss
 		make img
 
 clean:
-	@$(CARGO) clean
-	@rm -rf build fat.img
+	@rm -rf target build fat.img

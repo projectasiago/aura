@@ -40,18 +40,14 @@ $(TARGET): $(OBJS)
 	@mkdir -p $(BUILD_ROOT)
 	$(LD) $(LDFLAGS) -o $@ $(dir $(OBJS))*.o
 
-img: $(BUILD_ROOT)/$(HD_IMG)
-
-$(BUILD_ROOT)/$(HD_IMG): $(TARGET)
+img: build/boot.img
+build/boot.img: $(TARGET)
 	@dd if=/dev/zero of=fat.img bs=1k count=1440
 	@$(MFORMAT) -i fat.img -f 1440 ::
 	@$(MMD) -i fat.img ::/EFI
 	@$(MMD) -i fat.img ::/EFI/BOOT
 	@$(MCOPY) -i fat.img $(TARGET) ::/EFI/BOOT
 	@mv fat.img $(BUILD_ROOT)/$(HD_IMG)
-
-run: img
-	qemu-system-x86_64 -enable-kvm -net none -m 1024 -bios ovmf.fd -usb -usbdevice disk::$(BUILD_ROOT)/$(HD_IMG)
 
 clean:
 	@$(CARGO) clean

@@ -8,6 +8,7 @@
 extern crate uefi;
 extern crate rlibc;
 extern crate compiler_builtins;
+extern crate projectasiago_mish;
 
 use uefi::SimpleTextOutput;
 use uefi::graphics::{PixelFormat,Pixel};
@@ -47,6 +48,7 @@ pub extern "win64" fn efi_main(hdl: uefi::Handle, sys: uefi::SystemTable) -> uef
 
 	gop.set_mode(mode);
 
+	uefi::get_system_table().console().write(projectasiago_mish::hello_world());
 	uefi::get_system_table().console().write("Hello, World!\n\rvendor: ");
 	uefi::get_system_table().console().write_raw(uefi::get_system_table().vendor());
 	uefi::get_system_table().console().write("\n\r");
@@ -62,7 +64,7 @@ pub extern "win64" fn efi_main(hdl: uefi::Handle, sys: uefi::SystemTable) -> uef
 		xorshift_value.0
 	};
 
-	let info = gop.query_mode(mode).unwrap();
+	/*let info = gop.query_mode(mode).unwrap();
 	let resolutin_w : usize = info.horizontal_resolution as usize;
 	let resolutin_h : usize = info.vertical_resolution as usize;
 	const AREA : usize = 800 * 600;
@@ -79,7 +81,7 @@ pub extern "win64" fn efi_main(hdl: uefi::Handle, sys: uefi::SystemTable) -> uef
 		}
 		gop.draw(bitmap, resolutin_w/2-400, resolutin_h/2-300, 800, 600);
 		bs.stall(100000);
-	}
+	}*/
 
 	let (memory_map, memory_map_size, map_key, descriptor_size, descriptor_version) = uefi::lib_memory_map();
 	bs.exit_boot_services(&hdl, &map_key);
@@ -108,12 +110,3 @@ pub extern "C" fn _Unwind_Resume() -> ! {
 #[lang = "eh_personality"]
 #[no_mangle]
 pub extern fn rust_eh_personality() {}
-
-#[lang = "panic_fmt"]
-#[no_mangle]
-pub extern fn rust_begin_panic(_msg: core::fmt::Arguments,
-                               _file: &'static str,
-                               _line: u32) -> ! {
-	loop {}
-}
-

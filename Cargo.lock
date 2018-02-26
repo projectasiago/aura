@@ -1,16 +1,29 @@
 [[package]]
-name = "aura"
+name = "compiler_builtins"
+version = "0.1.0"
+source = "git+https://github.com/rust-lang-nursery/compiler-builtins#22f76e35fa8c82f68777c5ceceed3f2a4f8f3a51"
+
+[[package]]
+name = "projectasiago_aura"
 version = "0.1.0"
 dependencies = [
  "compiler_builtins 0.1.0 (git+https://github.com/rust-lang-nursery/compiler-builtins)",
+ "projectasiago_feta 0.1.0",
+ "projectasiago_mish 0.1.0",
  "rlibc 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "uefi 0.1.2 (git+https://github.com/orumin/rust-uefi?branch=beta)",
 ]
 
 [[package]]
-name = "compiler_builtins"
+name = "projectasiago_feta"
 version = "0.1.0"
-source = "git+https://github.com/rust-lang-nursery/compiler-builtins#22f76e35fa8c82f68777c5ceceed3f2a4f8f3a51"
+
+[[package]]
+name = "projectasiago_mish"
+version = "0.1.0"
+dependencies = [
+ "projectasiago_feta 0.1.0",
+]
 
 [[package]]
 name = "rlibc"

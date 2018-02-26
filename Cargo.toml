@@ -1,11 +1,18 @@
 [package]
-name = "aura"
+name = "projectasiago_aura"
 version = "0.1.0"
+publish = false
 
 [dependencies]
+projectasiago_mish = "0.1.0"
+projectasiago_feta = "0.1.0"
 uefi = { git = "https://github.com/orumin/rust-uefi", branch = "beta" }
 rlibc = "1.0"
 compiler_builtins = { git = "https://github.com/rust-lang-nursery/compiler-builtins" }
+
+[patch.crates-io]
+projectasiago_feta = { path = "../feta" }
+projectasiago_mish = { path = "../mish" }
 
 [lib]
 crate-type = ["staticlib"]

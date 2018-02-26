@@ -8,6 +8,7 @@
 extern crate uefi;
 extern crate rlibc;
 extern crate compiler_builtins;
+extern crate projectasiago_feta;
 extern crate projectasiago_mish;
 
 use uefi::SimpleTextOutput;
@@ -49,6 +50,7 @@ pub extern "win64" fn efi_main(hdl: uefi::Handle, sys: uefi::SystemTable) -> uef
 	gop.set_mode(mode);
 
 	uefi::get_system_table().console().write(projectasiago_mish::hello_world());
+	panic!("");
 	uefi::get_system_table().console().write("Hello, World!\n\rvendor: ");
 	uefi::get_system_table().console().write_raw(uefi::get_system_table().vendor());
 	uefi::get_system_table().console().write("\n\r");
@@ -92,21 +94,17 @@ pub extern "win64" fn efi_main(hdl: uefi::Handle, sys: uefi::SystemTable) -> uef
 	uefi::Status::Success
 }
 
-#[no_mangle]
-pub fn abort() -> ! {
-	loop {}
-}
-
-#[no_mangle]
-pub fn breakpoint() -> ! {
-	loop {}
-}
-
-#[no_mangle]
+// We can ignore this, I think. We aren't doing any unwind resumes.
+// https://doc.rust-lang.org/std/panic/fn.resume_unwind.html
+/*#[no_mangle]
 pub extern "C" fn _Unwind_Resume() -> ! {
 	loop {}
-}
+}*/
 
+// We can also ignore this, I think. panic!() will always halt right there and not return so this shouldn't be called.
+// https://stackoverflow.com/questions/329059/what-is-gxx-personality-v0-for
 #[lang = "eh_personality"]
 #[no_mangle]
-pub extern fn rust_eh_personality() {}
+pub extern fn rust_eh_personality() {
+	uefi::get_system_table().console().write("eh_personality\n\r");
+}

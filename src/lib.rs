@@ -8,64 +8,107 @@
 extern crate uefi;
 extern crate rlibc;
 extern crate compiler_builtins;
-extern crate projectasiago_feta;
-extern crate projectasiago_mish;
+extern crate projectasiago_feta as feta;
+extern crate projectasiago_mish as mish;
 
 use uefi::SimpleTextOutput;
-use uefi::graphics::{PixelFormat,Pixel};
+use uefi::graphics::{PixelFormat, Pixel};
 use core::num::Wrapping;
 use core::mem;
 use core::fmt::Write;
+
+/// converts a char into a &str
+macro_rules! char_to_str {
+	($x:expr) => {{
+		let v: &[u8] = &[$x as u8];
+		let buff: &str = unsafe {
+			&*(v as *const [u8] as *const str)
+		};
+	
+		&buff
+	}};
+}
 
 pub struct Writer {}
 
 impl Write for Writer {
 	fn write_str(&mut self, s: &str) -> core::fmt::Result {
-		uefi::get_system_table().console().write(s);
+		for c in s.chars() {
+			if c == '\n' {
+				uefi::get_system_table().console().write("\n\r");
+			} else {
+				uefi::get_system_table().console().write(char_to_str!(c));
+			}
+		}
 		Ok(())
 	}
+}
+
+fn handle_panic(_msg: core::fmt::Arguments,
+                _file: &'static str,
+                _line: u32) -> ! {
+	let mut writer = Writer {};
+	uefi::get_system_table().console().set_attribute(uefi::Attribute::new(
+		uefi::ForegroundColor::Red,
+		uefi::BackgroundColor::Black,
+	));
+	uefi::get_system_table().console().write("panic detected, info below:\n\r");
+	core::fmt::write(&mut writer, _msg);
+	uefi::get_system_table().console().write("\n\r");
+	uefi::get_system_table().console().set_attribute(uefi::Attribute::new(
+		uefi::ForegroundColor::White,
+		uefi::BackgroundColor::Black,
+	));
+	loop {}
 }
 
 #[allow(unreachable_code)]
 #[no_mangle]
 pub extern "win64" fn efi_main(hdl: uefi::Handle, sys: uefi::SystemTable) -> uefi::Status {
 	uefi::initialize_lib(&hdl, &sys);
-
+	
+	unsafe {
+		feta::handle_panic = handle_panic;
+	}
+	
 	let bs = uefi::get_system_table().boot_services();
 	let rs = uefi::get_system_table().runtime_services();
-
+	
 	let gop = uefi::graphics::GraphicsOutputProtocol::new().unwrap();
-
+	
 	let mut mode: u32 = 0;
 	for i in 0..gop.get_max_mode() {
 		let info = gop.query_mode(i).unwrap();
-
+		
 		if info.pixel_format != PixelFormat::RedGreenBlue
 			&& info.pixel_format != PixelFormat::BlueGreenRed { continue; }
 		if info.horizontal_resolution > 1920 && info.vertical_resolution > 1080 { continue; }
-		if info.horizontal_resolution == 1920 && info.vertical_resolution == 1080 { mode = i; break; }
+		if info.horizontal_resolution == 1920 && info.vertical_resolution == 1080 {
+			mode = i;
+			break;
+		}
 		mode = i;
 	};
-
+	
 	gop.set_mode(mode);
-
-	uefi::get_system_table().console().write(projectasiago_mish::hello_world());
-	panic!("");
+	
+	uefi::get_system_table().console().write(mish::hello_world());
+	uefi::get_system_table().console().write("\n\r");
 	uefi::get_system_table().console().write("Hello, World!\n\rvendor: ");
 	uefi::get_system_table().console().write_raw(uefi::get_system_table().vendor());
 	uefi::get_system_table().console().write("\n\r");
-
+	
 	let tm = rs.get_time().unwrap();
 //    let mut xorshift_value = Wrapping(tm.nanosecond as u64);
 	let mut xorshift_value = Wrapping(14312312512314u64);
-	let mut xorshift = ||{
+	let mut xorshift = || {
 		xorshift_value ^= xorshift_value >> 12;
 		xorshift_value ^= xorshift_value << 25;
 		xorshift_value ^= xorshift_value >> 27;
 		xorshift_value = xorshift_value * Wrapping(2685821657736338717u64);
 		xorshift_value.0
 	};
-
+	
 	/*let info = gop.query_mode(mode).unwrap();
 	let resolutin_w : usize = info.horizontal_resolution as usize;
 	let resolutin_h : usize = info.vertical_resolution as usize;
@@ -84,13 +127,12 @@ pub extern "win64" fn efi_main(hdl: uefi::Handle, sys: uefi::SystemTable) -> uef
 		gop.draw(bitmap, resolutin_w/2-400, resolutin_h/2-300, 800, 600);
 		bs.stall(100000);
 	}*/
-
+	
 	let (memory_map, memory_map_size, map_key, descriptor_size, descriptor_version) = uefi::lib_memory_map();
 	bs.exit_boot_services(&hdl, &map_key);
 	rs.set_virtual_address_map(&memory_map_size, &descriptor_size, &descriptor_version, memory_map);
-
-	loop {
-	}
+	
+	loop {}
 	uefi::Status::Success
 }
 

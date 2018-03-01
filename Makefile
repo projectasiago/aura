@@ -1,7 +1,7 @@
 all: build/boot.img
 
 build/boot.img: empty
-	RUST_TARGET_PATH=$(shell pwd) xargo build --target x86_64-unknown-efi
+	RUST_TARGET_PATH=$(shell pwd) RUSTFLAGS='-Z external-macro-backtrace' xargo build --target x86_64-unknown-efi
 	(cd target/x86_64-unknown-efi/debug && x86_64-efi-pe-ar x *.a)
 	mkdir -p build
 	x86_64-efi-pe-ld --gc-sections --oformat pei-x86-64 --subsystem 10 -pie -e efi_main -o build/bootx64.efi target/x86_64-unknown-efi/debug/*.o

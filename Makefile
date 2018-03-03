@@ -1,3 +1,4 @@
+.PHONY:
 all: build/boot.img
 
 build/boot.img: empty
@@ -12,6 +13,11 @@ build/boot.img: empty
 	mcopy -i fat.img build/bootx64.efi ::/EFI/BOOT
 	mv fat.img build/boot.img
 
+.PHONY:
+run:
+	qemu-system-x86_64 -enable-kvm -net none -m 1024 -bios aura/ovmf.fd -usb -usbdevice disk::aura/build/boot.img
+
+.PHONY:
 clean:
 	@rm -rf build target fat.img
 

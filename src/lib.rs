@@ -3,9 +3,11 @@
 #![feature(intrinsics)]
 #![feature(lang_items)]
 #![feature(compiler_builtins_lib)]
+#![feature(custom_attribute)]
 #![allow(unused_variables)]
 
 extern crate uefi;
+//extern crate alloc_uefi;
 extern crate rlibc;
 extern crate compiler_builtins;
 extern crate projectasiago_feta as feta;
@@ -44,6 +46,8 @@ impl Write for Writer {
 	}
 }
 
+#[lang = "panic_fmt"]
+#[no_mangle]
 fn handle_panic(_msg: core::fmt::Arguments,
                 _file: &'static str,
                 _line: u32) -> ! {
@@ -66,10 +70,7 @@ fn handle_panic(_msg: core::fmt::Arguments,
 #[no_mangle]
 pub extern "win64" fn efi_main(hdl: uefi::Handle, sys: uefi::SystemTable) -> uefi::Status {
 	uefi::initialize_lib(&hdl, &sys);
-	
-	unsafe {
-		feta::handle_panic = handle_panic;
-	}
+	//alloc_uefi::setup_alloc(sys, bs.handle_protocol::<LoadedImageProtocol>(hdl).unwrap().image_data_type);
 	
 	let bs = uefi::get_system_table().boot_services();
 	let rs = uefi::get_system_table().runtime_services();

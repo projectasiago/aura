@@ -4,16 +4,12 @@ version = "0.1.0"
 publish = false
 
 [dependencies]
-projectasiago_mish = { version = "0.1.0", features = ["no_std"] }
-projectasiago_feta = "0.1.0"
+projectasiago_mish = { git = "https://github.com/projectasiago/mish", features = ["no_std"] }
+projectasiago_feta = { git = "https://github.com/projectasiago/feta" }
 uefi = { git = "https://github.com/orumin/rust-uefi", branch = "beta" }
 rlibc = "1.0"
 compiler_builtins = { git = "https://github.com/rust-lang-nursery/compiler-builtins" }
 #alloc_uefi = "0.2.0"
-
-[patch.crates-io]
-projectasiago_feta = { path = "../feta" }
-projectasiago_mish = { path = "../mish" }
 
 [lib]
 crate-type = ["staticlib"]
